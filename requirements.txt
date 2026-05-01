@@ -1,6 +1,7 @@
 gunicorn
 flask
 flask-cors
+pymysql
 mysql-connector-python
 pandas
 openpyxl
