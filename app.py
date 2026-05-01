@@ -6,6 +6,7 @@ import pandas as pd
 import smtplib
 import threading
 import time
+import pymysql 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from mysql.connector import pooling # Pooling Support
@@ -15,6 +16,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from groq import Groq
 from PyPDF2 import PdfReader
+
 
 # Environment Variables Load
 load_dotenv()
@@ -53,12 +55,30 @@ CORS(app, resources={r"/*": {"origins": "*"}}, support_credentials=True)
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # --- DATABASE CONNECTION POOL ---
-db_config = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD"),
-    "database": "college_db"
-}
+# db_config = {
+#     "host": os.getenv("DB_HOST", "localhost"),
+#     "user": os.getenv("DB_USER", "root"),
+#     "password": os.getenv("DB_PASSWORD"),
+#     "database": "college_db"
+# }
+
+ 
+
+# Database configuration (Aiven ke liye)
+def get_db_connection():
+    try:
+        return pymysql.connect(
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            port=int(os.getenv("DB_PORT")),
+            database=os.getenv("DB_NAME"),
+            cursorclass=pymysql.cursors.DictCursor,
+            ssl={'ssl': {}}
+        )
+    except Exception as e:
+        print(f"Error connecting to Cloud DB: {e}")
+        return None
 
 # Connection Pool Creation (20 Connections set)
 try:
